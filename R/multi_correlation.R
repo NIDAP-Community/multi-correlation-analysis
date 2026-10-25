@@ -140,20 +140,104 @@ write_matrix_tsv <- function(matrix, path) {
   utils::write.table(output, path, sep = "\t", quote = FALSE, row.names = FALSE)
 }
 
-plot_heatmap <- function(correlation, title, path, style = "circle") {
+p_value_score <- function(p_value, cap = 5) {
+  # -log10(p) is a monotonic evidence scale.  The cap prevents a few extremely
+  # small p-values from making all other circles imperceptibly small.
+  bounded <- pmin(pmax(p_value, .Machine$double.xmin), 1)
+  score <- pmin(-log10(bounded), cap) / cap
+  score[!is.finite(score)] <- 0
+  score
+}
+
+plot_p_value_bubbles <- function(correlation, p_value, title, show_p_value_key = TRUE) {
+  # Circle area represents inverse raw p-value; signed correlation is encoded
+  # separately by colour and printed as a coefficient.  This makes effect size
+  # and its statistical evidence legible at the same time.
+  genes <- colnames(correlation)
+  n_genes <- length(genes)
+  displayed <- which(upper.tri(correlation, diag = TRUE), arr.ind = TRUE)
+  x <- displayed[, 2L]
+  y <- n_genes - displayed[, 1L] + 1L
+  correlations <- correlation[displayed]
+  evidence <- p_value_score(p_value[displayed])
+  palette <- grDevices::colorRampPalette(c("#2166AC", "#F7F7F7", "#B2182B"))(201)
+  color_index <- pmax(1L, pmin(length(palette), round((correlations + 1) * 100) + 1L))
+  bubble_colours <- palette[color_index]
+  bubble_colours[!is.finite(correlations)] <- "grey80"
+
+  graphics::par(mar = c(5.3, 5.4, 3.6, if (show_p_value_key) 7.5 else 1.5), xpd = NA)
+  graphics::plot(NA, xlim = c(0.5, n_genes + if (show_p_value_key) 3 else 0.5),
+                 ylim = c(0.5, n_genes + 0.5), axes = FALSE, xlab = "", ylab = "",
+                 asp = 1, main = title, cex.main = 1.05)
+  # Retain a light full matrix grid to make sparse upper-triangle positions easy
+  # to scan, without implying that the lower triangle is an additional analysis.
+  for (row in seq_len(n_genes)) {
+    for (column in seq_len(n_genes)) {
+      graphics::rect(column - 0.5, n_genes - row + 0.5,
+                     column + 0.5, n_genes - row + 1.5,
+                     col = "#FAFAFA", border = "#E2E2E2")
+    }
+  }
+  # sqrt(score) makes the visible disk area, rather than the radius, increase
+  # approximately linearly with the capped -log10(p) evidence score.
+  radius <- 0.07 + 0.39 * sqrt(evidence)
+  graphics::symbols(x, y, circles = radius^2, inches = FALSE, add = TRUE,
+                    bg = bubble_colours, fg = "white")
+  coefficient_colours <- ifelse(abs(correlations) >= 0.55, "white", "grey15")
+  graphics::text(x, y, labels = formatC(correlations, format = "f", digits = 2),
+                 cex = 0.58, col = coefficient_colours)
+  graphics::axis(2, at = rev(seq_len(n_genes)), labels = genes, las = 2,
+                 tick = FALSE, cex.axis = 0.8)
+  # Slanted bottom labels keep the title area entirely free for the analysis
+  # name, even for gene panels with longer symbols.
+  graphics::text(seq_len(n_genes), rep(0.33, n_genes), labels = genes,
+                 srt = 45, adj = 1, cex = 0.76, col = "grey15")
+
+  if (show_p_value_key) {
+    key_p <- c(0.05, 0.01, 0.001)
+    key_score <- p_value_score(key_p)
+    key_x <- rep(n_genes + 0.95, length(key_p))
+    key_y <- c(n_genes - 0.6, n_genes - 2.0, n_genes - 3.6)
+    graphics::text(n_genes + 0.65, n_genes + 0.35,
+                   labels = "Circle area\ninverse raw p-value", adj = c(0, 1),
+                   cex = 0.67, col = "grey20")
+    graphics::symbols(key_x, key_y,
+                      circles = (0.07 + 0.39 * sqrt(key_score))^2,
+                      inches = FALSE, add = TRUE, bg = "grey65", fg = "grey40")
+    graphics::text(key_x + 0.45, key_y, labels = paste0("p = ", key_p),
+                   adj = 0, cex = 0.64, col = "grey20")
+    graphics::text(n_genes + 0.65, 1.95, labels = "Color: correlation",
+                   adj = c(0, 0.5), cex = 0.67, col = "grey20")
+    graphics::points(n_genes + 1.0, 1.35, pch = 16, cex = 1.2, col = "#2166AC")
+    graphics::text(n_genes + 1.3, 1.35, labels = "negative", adj = 0,
+                   cex = 0.62, col = "grey20")
+    graphics::points(n_genes + 1.0, 0.82, pch = 16, cex = 1.2, col = "#B2182B")
+    graphics::text(n_genes + 1.3, 0.82, labels = "positive", adj = 0,
+                   cex = 0.62, col = "grey20")
+  }
+}
+
+plot_heatmap <- function(correlation, p_value, title, path, style = "circle",
+                         show_significance = TRUE) {
   if (!style %in% c("circle", "square")) {
     stop("heatmap_style must be 'circle' or 'square'.")
   }
+  if (!identical(dim(correlation), dim(p_value))) {
+    stop("p_value must have the same dimensions as correlation.")
+  }
   grDevices::png(path, width = 1800, height = 1600, res = 220)
   on.exit(grDevices::dev.off(), add = TRUE)
-  if (requireNamespace("corrplot", quietly = TRUE)) {
-    # corrplot's "circle" method is a bubble correlation plot: area encodes
-    # correlation magnitude and colour encodes direction. Its "color" method
-    # is presented to users as the square alternative.
-    corrplot_method <- if (style == "circle") "circle" else "color"
-    corrplot::corrplot(correlation, method = corrplot_method, type = "upper", order = "original",
-                       addCoef.col = "black", number.cex = 0.65, tl.col = "black",
-                       tl.srt = 45, mar = c(1, 1, 3, 1), title = title)
+  if (style == "circle") {
+    plot_p_value_bubbles(correlation, p_value, title, show_p_value_key = show_significance)
+  } else if (requireNamespace("corrplot", quietly = TRUE)) {
+    # The square option remains a conventional correlation matrix, where colour
+    # represents signed correlation and labels give the coefficient.
+    corrplot_arguments <- list(corr = correlation, method = "color",
+                               type = "upper", order = "original",
+                               addCoef.col = "black", number.cex = 0.65,
+                               tl.col = "black", tl.srt = 45, tl.offset = 0.4,
+                               mar = c(1, 1, 3, 1), title = title)
+    do.call(corrplot::corrplot, corrplot_arguments)
   } else {
     stats::heatmap(correlation, symm = TRUE, col = grDevices::colorRampPalette(
       c("#2166AC", "#F7F7F7", "#B2182B"))(100), main = title)
@@ -165,6 +249,7 @@ run_multi_correlation <- function(counts, metadata, gene_column, sample_column,
                                   samples = character(), duplicate_policy = "max",
                                   correlation_method = "spearman", min_samples = 3L,
                                   update_genes = TRUE, heatmap_style = "circle",
+                                  show_significance = TRUE,
                                   output_dir = ".") {
   heatmap_style <- tolower(heatmap_style)
   if (!duplicate_policy %in% c("sum", "max")) stop("duplicate_policy must be 'sum' or 'max'.")
@@ -223,9 +308,10 @@ run_multi_correlation <- function(counts, metadata, gene_column, sample_column,
         write_matrix_tsv(statistics$correlation, paste0(prefix, "_correlation_matrix.tsv"))
         write_matrix_tsv(statistics$p_value, paste0(prefix, "_p_value_matrix.tsv"))
         write_matrix_tsv(statistics$fdr, paste0(prefix, "_fdr_matrix.tsv"))
-        plot_heatmap(statistics$correlation,
+        plot_heatmap(statistics$correlation, statistics$p_value,
                      sprintf("Gene correlation: %s (n = %d)", category, length(category_samples)),
-                     paste0(prefix, "_correlation_heatmap.png"), style = heatmap_style)
+                     paste0(prefix, "_correlation_heatmap.png"), style = heatmap_style,
+                     show_significance = show_significance)
       }
     }
     summary_rows[[length(summary_rows) + 1L]] <- data.frame(

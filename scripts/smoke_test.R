@@ -5,6 +5,13 @@ script_file <- sub("^--file=", "", script_argument[grepl("^--file=", script_argu
 script_path <- if (!is.na(script_file) && nzchar(script_file)) normalizePath(script_file) else normalizePath("scripts/smoke_test.R")
 project_dir <- dirname(dirname(script_path))
 source(file.path(project_dir, "R", "multi_correlation.R"))
+
+# The circle view must use a monotonic inverse p-value scale: stronger evidence
+# yields a larger bubble score, while a larger p-value yields a smaller score.
+p_value_scores <- p_value_score(c(0.5, 0.05, 0.01, 0.001))
+if (!all(diff(p_value_scores) > 0)) {
+  stop("P-value bubble scale is not monotonically inverse to raw p-value.")
+}
 output_dir <- file.path(tempdir(), "multi-correlation-smoke")
 unlink(output_dir, recursive = TRUE)
 summary <- run_multi_correlation(
