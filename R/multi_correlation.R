@@ -165,8 +165,8 @@ plot_p_value_bubbles <- function(correlation, p_value, title, show_p_value_key =
   bubble_colours <- palette[color_index]
   bubble_colours[!is.finite(correlations)] <- "grey80"
 
-  graphics::par(mar = c(5.3, 5.4, 3.6, if (show_p_value_key) 7.5 else 1.5), xpd = NA)
-  graphics::plot(NA, xlim = c(0.5, n_genes + if (show_p_value_key) 3 else 0.5),
+  graphics::par(mar = c(5.3, 5.4, 3.6, if (show_p_value_key) 6.2 else 1.5), xpd = NA)
+  graphics::plot(NA, xlim = c(0.5, n_genes + if (show_p_value_key) 2.45 else 0.5),
                  ylim = c(0.5, n_genes + 0.5), axes = FALSE, xlab = "", ylab = "",
                  asp = 1, main = title, cex.main = 1.05)
   # Retain a light full matrix grid to make sparse upper-triangle positions easy
@@ -196,23 +196,25 @@ plot_p_value_bubbles <- function(correlation, p_value, title, show_p_value_key =
   if (show_p_value_key) {
     key_p <- c(0.05, 0.01, 0.001)
     key_score <- p_value_score(key_p)
-    key_x <- rep(n_genes + 0.95, length(key_p))
-    key_y <- c(n_genes - 0.6, n_genes - 2.0, n_genes - 3.6)
-    graphics::text(n_genes + 0.65, n_genes + 0.35,
+    # A horizontal size scale is quicker to scan than a second, widely spaced
+    # vertical series and keeps the matrix itself as the focal point.
+    key_x <- n_genes + c(0.55, 1.22, 1.95)
+    key_y <- rep(n_genes - 1.25, length(key_p))
+    graphics::text(n_genes + 0.52, n_genes + 0.3,
                    labels = "Circle area\ninverse raw p-value", adj = c(0, 1),
                    cex = 0.67, col = "grey20")
     graphics::symbols(key_x, key_y,
                       circles = (0.07 + 0.39 * sqrt(key_score))^2,
                       inches = FALSE, add = TRUE, bg = "grey65", fg = "grey40")
-    graphics::text(key_x + 0.45, key_y, labels = paste0("p = ", key_p),
-                   adj = 0, cex = 0.64, col = "grey20")
-    graphics::text(n_genes + 0.65, 1.95, labels = "Color: correlation",
+    graphics::text(key_x, key_y - 0.57, labels = paste0("p = ", key_p),
+                   cex = 0.56, col = "grey20")
+    graphics::text(n_genes + 0.52, n_genes - 2.65, labels = "Color: correlation",
                    adj = c(0, 0.5), cex = 0.67, col = "grey20")
-    graphics::points(n_genes + 1.0, 1.35, pch = 16, cex = 1.2, col = "#2166AC")
-    graphics::text(n_genes + 1.3, 1.35, labels = "negative", adj = 0,
+    graphics::points(n_genes + 0.9, n_genes - 3.18, pch = 16, cex = 1.2, col = "#2166AC")
+    graphics::text(n_genes + 1.16, n_genes - 3.18, labels = "negative", adj = 0,
                    cex = 0.62, col = "grey20")
-    graphics::points(n_genes + 1.0, 0.82, pch = 16, cex = 1.2, col = "#B2182B")
-    graphics::text(n_genes + 1.3, 0.82, labels = "positive", adj = 0,
+    graphics::points(n_genes + 0.9, n_genes - 3.66, pch = 16, cex = 1.2, col = "#B2182B")
+    graphics::text(n_genes + 1.16, n_genes - 3.66, labels = "positive", adj = 0,
                    cex = 0.62, col = "grey20")
   }
 }
