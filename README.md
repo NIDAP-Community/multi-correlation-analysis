@@ -22,6 +22,14 @@ Gene symbols are normalized with L2P by default in the container. Use `--update-
 
 ## Run with Docker
 
+Pull the published AMD64 image:
+
+```bash
+docker pull ghcr.io/nidap-community/multi-correlation-analysis:v0.1.0
+```
+
+`v0.1.0`, `latest`, and `52f5c9f` currently resolve to the validated release image. Prefer `v0.1.0` for reproducible use; the image digest is `sha256:30fb2057871e40949d36634963f3fef5966d57ee059b7bbe6fb389c95b0bc37a`.
+
 Build a local AMD64 image:
 
 ```bash
@@ -107,7 +115,7 @@ The lockfile includes the exact L2P tarball URL. On macOS, restoring L2P from so
 
 ## HPC with Apptainer or Singularity
 
-Pull a published GHCR image after the first release, then bind input and output directories explicitly:
+Pull the published GHCR image, then bind input and output directories explicitly:
 
 ```bash
 singularity pull multi-correlation-analysis.sif \
@@ -126,7 +134,7 @@ singularity run \
 
 ## Container contract
 
-The image targets `linux/amd64`, uses `/data` as read-only input, and uses `/output` as writable output. It is not published or released until image validation and review are complete.
+The published `v0.1.0` image targets `linux/amd64`, uses `/data` as read-only input, and uses `/output` as writable output. It passed `container/smoke_test.sh` with the included representative fixture before publication.
 
 ## Requirements
 
@@ -141,11 +149,11 @@ This standalone application preserves the user-facing intent of the released Mul
 
 ## License and support
 
-This software is provided as-is for research use. Once the GitHub repository is created, please report issues at `NIDAP-Community/multi-correlation-analysis`.
+This software is provided as-is for research use. Please report issues at [NIDAP-Community/multi-correlation-analysis](https://github.com/NIDAP-Community/multi-correlation-analysis/issues).
 
 ## Version
 
-**Current version:** 0.1.0 (pre-release)
+**Current version:** 0.1.0
 
 **Base image:** `rocker/r-ver:4.5.2`
 
