@@ -2,7 +2,9 @@
 
 A containerized R application for category-specific gene-gene correlation analysis. It accepts a normalized counts table and matching sample metadata, then writes correlation, p-value, and false-discovery-rate (FDR) matrices with a heatmap for each selected category.
 
-This is a standalone application for command-line, HPC, and future OncoChat use. It is intentionally distinct from `multi-gene-correlations`, which correlates individual genes with a signature score.
+This is a standalone application for command-line and HPC use. It is
+intentionally distinct from `multi-gene-correlations`, which correlates
+individual genes with a signature score.
 
 ## Example output from real data
 
