@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-10-25
 
 - Adds a selectable correlation-heatmap style: the circle/bubble view is now the default, and `--heatmap-style square` retains the colored-square alternative.
 - Fixes the default `max` duplicate-gene policy so its representative row retains the original sample-column names.

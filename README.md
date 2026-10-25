@@ -27,10 +27,10 @@ Gene symbols are normalized with L2P by default in the container. Use `--update-
 Pull the published AMD64 image:
 
 ```bash
-docker pull ghcr.io/nidap-community/multi-correlation-analysis:v0.1.0
+docker pull ghcr.io/nidap-community/multi-correlation-analysis:v0.1.1
 ```
 
-`v0.1.0`, `latest`, and `52f5c9f` currently resolve to the validated release image. Prefer `v0.1.0` for reproducible use; the image digest is `sha256:30fb2057871e40949d36634963f3fef5966d57ee059b7bbe6fb389c95b0bc37a`.
+`v0.1.1` is the reproducible release tag for the selectable circle/bubble and square heatmap styles. `latest` is provided for convenience.
 
 Build a local AMD64 image:
 
@@ -139,7 +139,7 @@ singularity run \
 
 ## Container contract
 
-The published `v0.1.0` image targets `linux/amd64`, uses `/data` as read-only input, and uses `/output` as writable output. It passed `container/smoke_test.sh` with the included representative fixture before publication.
+The published `v0.1.1` image targets `linux/amd64`, uses `/data` as read-only input, and uses `/output` as writable output. It passed `container/smoke_test.sh` with the included representative fixture before publication.
 
 ## Requirements
 
@@ -158,7 +158,7 @@ This software is provided as-is for research use. Please report issues at [NIDAP
 
 ## Version
 
-**Current version:** 0.1.0
+**Current version:** 0.1.1
 
 **Base image:** `rocker/r-ver:4.5.2`
 
