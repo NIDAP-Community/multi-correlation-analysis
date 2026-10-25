@@ -40,4 +40,4 @@ Rscript --vanilla entrypoint.R \
   --output-dir results/tcga-prad-seven-gene-panel
 ```
 
-The identical analysis was also run with `--heatmap-style square` into a separate output directory. In the default circle figure, circle area encodes inverse raw p-value, color encodes signed correlation, and the printed number is the correlation coefficient. The README contains the derived pooled-category figure from each run and no input data. The full output contract also includes category-specific correlation, p-value, and Benjamini-Hochberg FDR matrices.
+The identical analysis was also run with `--heatmap-style square` into a separate output directory. The README contains the derived pooled-category figure from each run and no input data. The full output contract also includes category-specific correlation, p-value, and Benjamini-Hochberg FDR matrices.

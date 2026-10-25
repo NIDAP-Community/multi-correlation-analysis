@@ -3,7 +3,6 @@
 ## 0.1.1 — 2026-10-25
 
 - Adds a selectable correlation-heatmap style: the circle/bubble view is now the default, and `--heatmap-style square` retains the colored-square alternative.
-- In the default circle/bubble view, circle area now encodes inverse raw p-value, color encodes signed correlation, and printed labels retain the correlation coefficient. An in-plot size key can be hidden explicitly.
 - Fixes the default `max` duplicate-gene policy so its representative row retains the original sample-column names.
 
 ## 0.1.0 — 2026-10-25

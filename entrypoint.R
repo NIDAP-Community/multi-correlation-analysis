@@ -9,7 +9,6 @@ if (length(args) == 0L || any(args %in% c("--help", "-h"))) {
       "          --genes GENE1,GENE2 --category-column NAME --categories VALUE1,VALUE2\n\n",
       "Optional: --samples ID1,ID2 --duplicate-policy sum|max --correlation-method pearson|spearman\n",
       "          --min-samples 3 --update-genes true|false --heatmap-style circle|square\n",
-      "          --show-significance true|false (show circle p-value-size key)\n",
       "          --output-dir DIRECTORY\n", sep = "")
   quit(status = 0)
 }
@@ -40,7 +39,6 @@ script_dir <- if (!is.na(script_file) && nzchar(script_file)) dirname(normalizeP
 source(file.path(script_dir, "R", "multi_correlation.R"))
 options <- parse_options(args)
 options$`heatmap-style` <- tolower(options$`heatmap-style` %||% "circle")
-options$`show-significance` <- parse_bool(options$`show-significance` %||% "true")
 required <- c("counts", "metadata", "gene-column", "sample-column", "genes", "category-column", "categories")
 missing <- required[!required %in% names(options)]
 if (length(missing)) stop("Missing required options: ", paste(paste0("--", missing), collapse = ", "))
@@ -56,7 +54,6 @@ summary <- run_multi_correlation(
   min_samples = as.integer(options$`min-samples` %||% 3L),
   update_genes = parse_bool(options$`update-genes` %||% "true"),
   heatmap_style = options$`heatmap-style`,
-  show_significance = options$`show-significance`,
   output_dir = options$`output-dir` %||% "/output")
 utils::write.table(data.frame(option = names(options), value = unlist(options, use.names = FALSE)),
                    file.path(options$`output-dir` %||% "/output", "run_parameters.tsv"),

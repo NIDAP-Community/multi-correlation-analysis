@@ -6,7 +6,7 @@ This is a standalone application for command-line, HPC, and future OncoChat use.
 
 ## Example output from real data
 
-The figure below was generated with normalized bulk RNA-seq expression from the public [TCGA-PRAD project](https://portal.gdc.cancer.gov/projects/TCGA-PRAD). It shows pooled Spearman correlations across 549 matched samples for a small prostate-expression panel (`AR`, `FOXA1`, `KLK2`, `KLK3`, `NKX3-1`, `TMPRSS2`, and `ERG`). In the bubble panel, circle area encodes inverse raw p-value, color encodes signed correlation, and the printed number is the correlation coefficient. This is a workflow demonstration, not a prognostic or clinical claim.
+The figure below was generated with normalized bulk RNA-seq expression from the public [TCGA-PRAD project](https://portal.gdc.cancer.gov/projects/TCGA-PRAD). It shows pooled Spearman correlations across 549 matched samples for a small prostate-expression panel (`AR`, `FOXA1`, `KLK2`, `KLK3`, `NKX3-1`, `TMPRSS2`, and `ERG`). This is a workflow demonstration, not a prognostic or clinical claim.
 
 | Circle / bubble view (default) | Square view (`--heatmap-style square`) |
 | --- | --- |
@@ -24,13 +24,13 @@ Gene symbols are normalized with L2P by default in the container. Use `--update-
 
 ## Run with Docker
 
-Pull the published AMD64 image:
+Pull the current published AMD64 image:
 
 ```bash
-docker pull ghcr.io/nidap-community/multi-correlation-analysis:v0.1.1
+docker pull ghcr.io/nidap-community/multi-correlation-analysis:v0.1.0
 ```
 
-`v0.1.1` is the reproducible release tag for the selectable circle/bubble and square heatmap styles. `latest` is provided for convenience.
+`v0.1.0`, `latest`, and `52f5c9f` currently resolve to the validated release image. The `v0.1.1` source release candidate adds the selectable circle/bubble and square heatmap styles; its public image will be published only after final container validation.
 
 Build a local AMD64 image:
 
@@ -60,7 +60,7 @@ docker run --rm --platform linux/amd64 \
 
 `--categories all` analyzes every selected sample in addition to any named category. `--samples` accepts a comma-separated list or a file with one sample ID per line. For duplicate gene rows, use `sum` for RNA-seq-style counts and `max` for probe-style microarray data.
 
-`--heatmap-style circle` is the default bubble view: circle area represents inverse raw p-value (smaller circles indicate larger p-values), color represents the signed correlation, and the printed value is the correlation coefficient. Its size key is shown by default; use `--show-significance false` to hide that key without changing the bubbles. Use `--heatmap-style square` for the same data and coefficient labels in a colored-square matrix. Both retain the correlation-based gene ordering. The Benjamini-Hochberg FDR matrix is always written as a separate output.
+`--heatmap-style circle` is the default bubble view: circle area represents correlation magnitude and color represents direction. Use `--heatmap-style square` for the same data and labels in a colored-square matrix. Both retain the correlation-based gene ordering and coefficient labels. The Benjamini-Hochberg FDR matrix is always written as a separate output.
 
 ## Input file formats
 
@@ -139,12 +139,12 @@ singularity run \
 
 ## Container contract
 
-The published `v0.1.1` image targets `linux/amd64`, uses `/data` as read-only input, and uses `/output` as writable output. It passed `container/smoke_test.sh` with the included representative fixture before publication.
+The `v0.1.1` release candidate targets `linux/amd64`, uses `/data` as read-only input, and uses `/output` as writable output. Its public image will be published after `container/smoke_test.sh` completes on the final source revision.
 
 ## Requirements
 
 - R 4.5.x (the container uses `rocker/r-ver:4.5.2`)
-- `corrplot` for the square correlation heatmap; the default p-value bubble plot uses base R graphics
+- `corrplot` for circle/bubble or square correlation heatmaps; a base-R heatmap fallback is available
 - L2P for automatic gene-symbol updates
 - Docker, Apptainer, or Singularity for container execution
 
