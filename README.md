@@ -8,7 +8,9 @@ This is a standalone application for command-line, HPC, and future OncoChat use.
 
 The figure below was generated with normalized bulk RNA-seq expression from the public [TCGA-PRAD project](https://portal.gdc.cancer.gov/projects/TCGA-PRAD). It shows pooled Spearman correlations across 549 matched samples for a small prostate-expression panel (`AR`, `FOXA1`, `KLK2`, `KLK3`, `NKX3-1`, `TMPRSS2`, and `ERG`). This is a workflow demonstration, not a prognostic or clinical claim.
 
-![TCGA-PRAD pooled prostate-expression-panel Spearman correlation heatmap](docs/images/tcga_prad_prostate_panel_spearman_heatmap.png)
+| Circle / bubble view (default) | Square view (`--heatmap-style square`) |
+| --- | --- |
+| ![TCGA-PRAD pooled prostate-expression-panel Spearman bubble correlation heatmap](docs/images/tcga_prad_prostate_panel_spearman_circle_heatmap.png) | ![TCGA-PRAD pooled prostate-expression-panel Spearman square correlation heatmap](docs/images/tcga_prad_prostate_panel_spearman_square_heatmap.png) |
 
 The same run also produced separate category outputs for 496 primary tumor samples and 52 normal-tissue samples. Source details, parameters, sample accounting, and a reproducible command are in [the TCGA-PRAD example record](docs/examples/tcga-prad-7gene-panel.md). The repository includes only this derived figure; no TCGA input data are redistributed.
 
@@ -52,10 +54,13 @@ docker run --rm --platform linux/amd64 \
   --categories "Luminal,HER2,all" \
   --duplicate-policy sum \
   --correlation-method spearman \
+  --heatmap-style circle \
   --output-dir /output
 ```
 
 `--categories all` analyzes every selected sample in addition to any named category. `--samples` accepts a comma-separated list or a file with one sample ID per line. For duplicate gene rows, use `sum` for RNA-seq-style counts and `max` for probe-style microarray data.
+
+`--heatmap-style circle` is the default bubble view: circle area represents correlation magnitude and color represents direction. Use `--heatmap-style square` for the same data and labels in a colored-square matrix. Both retain the correlation-based gene ordering and coefficient labels.
 
 ## Input file formats
 
@@ -83,7 +88,7 @@ For each category, the application writes:
 - `<category>_correlation_matrix.tsv`
 - `<category>_p_value_matrix.tsv`
 - `<category>_fdr_matrix.tsv` (Benjamini-Hochberg correction across unique gene pairs)
-- `<category>_correlation_heatmap.png`
+- `<category>_correlation_heatmap.png` (circle/bubble by default; square when requested)
 
 It also writes `analysis_summary.tsv`, `gene_normalization.tsv`, `missing_genes.tsv`, and `run_parameters.tsv` for review and provenance.
 
@@ -139,7 +144,7 @@ The published `v0.1.0` image targets `linux/amd64`, uses `/data` as read-only in
 ## Requirements
 
 - R 4.5.x (the container uses `rocker/r-ver:4.5.2`)
-- `corrplot` for the circle-style heatmap; a base-R heatmap fallback is available
+- `corrplot` for circle/bubble or square correlation heatmaps; a base-R heatmap fallback is available
 - L2P for automatic gene-symbol updates
 - Docker, Apptainer, or Singularity for container execution
 

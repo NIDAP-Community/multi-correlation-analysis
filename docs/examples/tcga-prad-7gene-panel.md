@@ -36,7 +36,8 @@ Rscript --vanilla entrypoint.R \
   --duplicate-policy max \
   --correlation-method spearman \
   --update-genes false \
+  --heatmap-style circle \
   --output-dir results/tcga-prad-seven-gene-panel
 ```
 
-The README asset is `all_correlation_heatmap.png` from this run. The full output contract also includes category-specific correlation, p-value, and Benjamini-Hochberg FDR matrices.
+The identical analysis was also run with `--heatmap-style square` into a separate output directory. The README contains the derived pooled-category figure from each run and no input data. The full output contract also includes category-specific correlation, p-value, and Benjamini-Hochberg FDR matrices.

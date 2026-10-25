@@ -88,7 +88,10 @@ deduplicate_counts <- function(counts, gene_column, sample_columns, policy) {
       vapply(rows, function(x) sum(x, na.rm = TRUE), numeric(1))
     } else {
       totals <- rowSums(rows, na.rm = TRUE)
-      as.numeric(rows[which.max(totals), , drop = TRUE])
+      # Preserve the sample names after selecting the representative row.
+      # Without them, data.frame() creates V1, V2, ... columns and downstream
+      # sample selection fails for the default `max` policy.
+      stats::setNames(as.numeric(rows[which.max(totals), , drop = TRUE]), sample_columns)
     }
     data.frame(gene = gene, t(values), check.names = FALSE, stringsAsFactors = FALSE)
   })
@@ -137,11 +140,18 @@ write_matrix_tsv <- function(matrix, path) {
   utils::write.table(output, path, sep = "\t", quote = FALSE, row.names = FALSE)
 }
 
-plot_heatmap <- function(correlation, title, path) {
+plot_heatmap <- function(correlation, title, path, style = "circle") {
+  if (!style %in% c("circle", "square")) {
+    stop("heatmap_style must be 'circle' or 'square'.")
+  }
   grDevices::png(path, width = 1800, height = 1600, res = 220)
   on.exit(grDevices::dev.off(), add = TRUE)
   if (requireNamespace("corrplot", quietly = TRUE)) {
-    corrplot::corrplot(correlation, method = "color", type = "upper", order = "original",
+    # corrplot's "circle" method is a bubble correlation plot: area encodes
+    # correlation magnitude and colour encodes direction. Its "color" method
+    # is presented to users as the square alternative.
+    corrplot_method <- if (style == "circle") "circle" else "color"
+    corrplot::corrplot(correlation, method = corrplot_method, type = "upper", order = "original",
                        addCoef.col = "black", number.cex = 0.65, tl.col = "black",
                        tl.srt = 45, mar = c(1, 1, 3, 1), title = title)
   } else {
@@ -154,9 +164,12 @@ run_multi_correlation <- function(counts, metadata, gene_column, sample_column,
                                   genes, category_column, categories,
                                   samples = character(), duplicate_policy = "max",
                                   correlation_method = "spearman", min_samples = 3L,
-                                  update_genes = TRUE, output_dir = ".") {
+                                  update_genes = TRUE, heatmap_style = "circle",
+                                  output_dir = ".") {
+  heatmap_style <- tolower(heatmap_style)
   if (!duplicate_policy %in% c("sum", "max")) stop("duplicate_policy must be 'sum' or 'max'.")
   if (!correlation_method %in% c("pearson", "spearman")) stop("correlation_method must be pearson or spearman.")
+  if (!heatmap_style %in% c("circle", "square")) stop("heatmap_style must be circle or square.")
   if (min_samples < 3L) stop("min_samples must be at least 3.")
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -212,7 +225,7 @@ run_multi_correlation <- function(counts, metadata, gene_column, sample_column,
         write_matrix_tsv(statistics$fdr, paste0(prefix, "_fdr_matrix.tsv"))
         plot_heatmap(statistics$correlation,
                      sprintf("Gene correlation: %s (n = %d)", category, length(category_samples)),
-                     paste0(prefix, "_correlation_heatmap.png"))
+                     paste0(prefix, "_correlation_heatmap.png"), style = heatmap_style)
       }
     }
     summary_rows[[length(summary_rows) + 1L]] <- data.frame(
