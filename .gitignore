@@ -1,0 +1,32 @@
+# Generated results and temporary run directories
+results/
+test_output/
+output/
+*.rds
+*.RData
+*.Rhistory
+*.Ruserdata
+
+# Local data and bulky artifacts. Keep the compact, synthetic test fixture and
+# the reviewed documentation figure under version control.
+*.csv
+*.tsv
+*.txt
+*.png
+*.pdf
+!test_data/*.tsv
+!test_data/*.csv
+!test_data/*.txt
+!docs/images/*.png
+
+# R, renv, and macOS local state
+*.Rproj
+*.Rproj.user
+.DS_Store
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/sandbox/
+renv/staging/

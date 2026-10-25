@@ -1,0 +1,8 @@
+.git
+.github
+renv/library
+renv/local
+results
+test_output
+README.md
+docs
